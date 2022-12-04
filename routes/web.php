@@ -1,11 +1,14 @@
 <?php
 
 use App\Models\Post;
+use App\Models\User;
+use App\Models\Category;
+use Symfony\Component\Yaml\Yaml;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rules\Exists;
 use Spatie\YamlFrontMatter\YamlFrontMatter;
-use Symfony\Component\Yaml\Yaml;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,24 +22,17 @@ use Symfony\Component\Yaml\Yaml;
 */
 
 Route::get('/', function () {
-    // return Post::find("my-third-post"); You can find post from slug from anywhere now.
-    // $posts = Post::all();
-    // dd($posts);
-    // dd($posts[2]->getContents());
-    // dd($files);
-    // $posts = [];
-    // foreach ($files as $file) {
-    //     $doc = YamlFrontMatter::parseFile($file);
-    //     $posts[] = new Post($doc->title, $doc->excerpt, $doc->date, $doc->slug, $doc->body());
-    // }
-    // dd($posts);
-    // More cleaner approach::: Using array_map()...
-
-    return view('posts', ['posts' => Post::all()]);
+    return view('posts', ['posts' => Post::latest()->get()]);
     // dd($doc->excerpt);
 });
 
-Route::get('posts/{post}', function ($slug) {
+Route::get('posts/{post}', function (Post $post) { //Post::where('slug', $post)->firstOrFail();
     // Find a post by a slug and pass it to the view. The slug here actually was the file name.
-    return view('post', ['post' => Post::find($slug)]);
-})->where('post', '[A-z_-]+');
+    return view('post', ['post' => $post]);
+}); //->where('post', '[A-z_-]+');
+Route::get('categories/{category}', function (Category $category) {
+    return view('posts', ['posts' => $category->posts]);
+});
+Route::get('/authors/{author:username}', function (User $author) {
+    return view('posts', ['posts' => $author->posts]);
+});
